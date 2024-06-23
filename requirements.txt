@@ -6,3 +6,4 @@ numpy
 tensorflow==2.15.0
 keras==2.15.0
 Pillow
+h5py==3.9.0
