@@ -46,7 +46,7 @@ custom_objects = {"dice_coef": dice_coef, "dice_loss": dice_loss, "iou_coef": io
 
 # Load the pre-trained model
 model = load_model(
-    os.path.join(MODEL_FOLDER, "brain_mri_seg.h5"), custom_objects=custom_objects
+    os.path.join(MODEL_FOLDER, "brain_mri_seg.h5"), custom_objects=custom_objects, compile=False
 )
 
 
