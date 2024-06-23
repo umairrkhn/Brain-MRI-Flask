@@ -1,4 +1,4 @@
-FROM python:3.11-alpine
+FROM python:3.10-alpine
 
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
@@ -7,7 +7,6 @@ WORKDIR /app
 COPY . /app
 
 RUN pip install --no-cache-dir -r requirements.txt
-RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 libgl1-mesa-glx libglib2.0-0 -y
 
 # Run the web service on container startup. Here we use the gunicorn
 # webserver, with one worker process and 8 threads.
