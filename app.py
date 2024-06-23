@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template, send_file
+import tensorflow as tf
 from werkzeug.utils import secure_filename
 import numpy as np
 from keras.models import load_model
@@ -45,7 +46,7 @@ def iou_coef(y_true, y_pred, smooth=100):
 custom_objects = {"dice_coef": dice_coef, "dice_loss": dice_loss, "iou_coef": iou_coef}
 
 # Load the pre-trained model
-model = load_model("brain_mri_seg.h5", custom_objects=custom_objects)
+model = tf.keras.models.load_model("brain_mri.keras", custom_objects=custom_objects)
 
 
 @app.route("/")
