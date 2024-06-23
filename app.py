@@ -11,7 +11,7 @@ app = Flask(__name__)
 # Configure upload and result directories
 UPLOAD_FOLDER = "static/uploads/"
 RESULT_FOLDER = "static/results/"
-MODEL_FOLDER = "models/"
+# MODEL_FOLDER = "models/"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
 
@@ -45,9 +45,7 @@ def iou_coef(y_true, y_pred, smooth=100):
 custom_objects = {"dice_coef": dice_coef, "dice_loss": dice_loss, "iou_coef": iou_coef}
 
 # Load the pre-trained model
-model = load_model(
-    os.path.join(MODEL_FOLDER, "brain_mri_seg.h5"), custom_objects=custom_objects
-)
+model = load_model("brain_mri_seg.h5", custom_objects=custom_objects)
 
 
 @app.route("/")
