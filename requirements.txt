@@ -3,6 +3,6 @@ requests==2.31.0
 gunicorn
 Werkzeug
 numpy
-tensorflow
+tensorflow==2.16.1
 keras
 Pillow
