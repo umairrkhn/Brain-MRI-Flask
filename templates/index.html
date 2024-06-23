@@ -1,17 +1,88 @@
-<!-- templates/index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain MRI Segmentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .file-input {
+            margin: 20px 0;
+        }
+        .result {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .result img {
+            max-width: 300px;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 <body>
-    <h1>Brain MRI Segmentation</h1>
-    <form action="/predict" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".tif">
-        <input type="submit" value="Upload and Predict">
-    </form>
+    <div class="container">
+        <h1>Brain MRI Segmentation</h1>
+        <form id="uploadForm" action="/predict" method="post" enctype="multipart/form-data">
+            <input class="file-input" type="file" name="file" accept=".tif" required>
+            <input type="submit" value="Upload and Predict">
+        </form>
+        <div class="result" id="result">
+            <!-- Images will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const resultDiv = document.getElementById('result');
+                const data = await response.json();
+
+                resultDiv.innerHTML = `
+                    <div>
+                        <h3>Uploaded Image</h3>
+                        <img src="${data.uploaded_image}" alt="Uploaded Image">
+                    </div>
+                    <div>
+                        <h3>Predicted Mask</h3>
+                        <img src="${data.predicted_image}" alt="Predicted Mask">
+                    </div>
+                `;
+            } else {
+                alert('Error processing the image');
+            }
+        });
+    </script>
 </body>
 </html>
