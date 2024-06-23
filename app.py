@@ -101,6 +101,5 @@ def predict():
     return "Invalid file format. Please upload a TIFF image."
 
 
-if __name__ == '__main__':
-    server_port = os.environ.get('PORT', '8080')
-    app.run(debug=False, port=server_port, host='0.0.0.0')
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
