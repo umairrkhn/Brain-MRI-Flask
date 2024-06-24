@@ -58,25 +58,25 @@
     <script>
         document.getElementById('uploadForm').addEventListener('submit', async function(event) {
             event.preventDefault();
-
+    
             const formData = new FormData(this);
             const response = await fetch('/predict', {
                 method: 'POST',
                 body: formData
             });
-
+    
             if (response.ok) {
                 const resultDiv = document.getElementById('result');
                 const data = await response.json();
-
+    
                 resultDiv.innerHTML = `
                     <div>
                         <h3>Uploaded Image</h3>
-                        <img src="${data.uploaded_image}" alt="Uploaded Image">
+                        <img src="/uploads/${data.uploaded_image}" alt="Uploaded Image">
                     </div>
                     <div>
                         <h3>Predicted Mask</h3>
-                        <img src="${data.predicted_image}" alt="Predicted Mask">
+                        <img src="/predicted/${data.predicted_image}" alt="Predicted Mask">
                     </div>
                 `;
             } else {
@@ -84,5 +84,6 @@
             }
         });
     </script>
+    
 </body>
 </html>

@@ -1,104 +1,87 @@
-from flask import Flask, jsonify, request, render_template, send_file
+from flask import Flask, jsonify, request, render_template, send_from_directory
 from werkzeug.utils import secure_filename
-import numpy as np
-from keras.models import load_model
-from keras import backend as K
 from PIL import Image
+import shutil
+import requests
 import os
 
 app = Flask(__name__)
 
-# Configure upload and result directories
-UPLOAD_FOLDER = "static/uploads/"
-RESULT_FOLDER = "static/results/"
-MODEL_FOLDER = "models/"
+# Define the API endpoint
+API_URL = "https://brain-mri-function-kbdckfaerq-uc.a.run.app/predict"
+UPLOAD_FOLDER = "uploads"  # Folder where uploaded files will be stored
+PREDICTED_FOLDER = "predicted"  # Folder where predicted files will be stored
+
+# Ensure the upload and predicted folders exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(RESULT_FOLDER, exist_ok=True)
-
+os.makedirs(PREDICTED_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["RESULT_FOLDER"] = RESULT_FOLDER
+app.config["PREDICTED_FOLDER"] = PREDICTED_FOLDER
 
 
-# function to create dice coefficient
-def dice_coef(y_true, y_pred, smooth=100):
-    y_true_flatten = K.flatten(y_true)
-    y_pred_flatten = K.flatten(y_pred)
-
-    intersection = K.sum(y_true_flatten * y_pred_flatten)
-    union = K.sum(y_true_flatten) + K.sum(y_pred_flatten)
-    return (2 * intersection + smooth) / (union + smooth)
-
-
-# function to create dice loss
-def dice_loss(y_true, y_pred, smooth=100):
-    return -dice_coef(y_true, y_pred, smooth)
-
-
-# function to create iou coefficient
-def iou_coef(y_true, y_pred, smooth=100):
-    intersection = K.sum(y_true * y_pred)
-    sum = K.sum(y_true + y_pred)
-    iou = (intersection + smooth) / (sum - intersection + smooth)
-    return iou
-
-
-custom_objects = {"dice_coef": dice_coef, "dice_loss": dice_loss, "iou_coef": iou_coef}
-
-# Load the pre-trained model
-model = load_model(
-    os.path.join(MODEL_FOLDER, "brain_mri_seg.h5"), custom_objects=custom_objects, compile=False
-)
-
-
+# Home route to render index.html
 @app.route("/")
-def index():
+def home():
     return render_template("index.html")
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
     if "file" not in request.files:
-        return "No file part"
+        return jsonify({"error": "No file part"})
 
     file = request.files["file"]
     if file.filename == "":
-        return "No selected file"
+        return jsonify({"error": "No selected file"})
 
-    if file and file.filename.endswith(".tif"):
+    if file and file.filename.endswith((".tif")):
         filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(filepath)
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(file_path)
 
-        # Process the uploaded image
-        uploaded_img = Image.open(filepath).convert("RGB")  # Convert to RGB
-        uploaded_img.save(
-            os.path.join(app.config["UPLOAD_FOLDER"], filename.replace(".tif", ".png"))
+        # Call the API
+        files = {"file": (filename, open(file_path, "rb"))}
+
+        response = requests.post(API_URL, files=files)
+
+        # Close the file handle explicitly
+        files["file"][1].close()
+
+        # Save the predicted image as .png
+        predicted_filename = f"{filename[:-4]}_predicted.png"
+        predicted_file_path = os.path.join(
+            app.config["PREDICTED_FOLDER"], predicted_filename
+        )
+        with open(predicted_file_path, "wb") as f:
+            f.write(response.content)
+
+        # Convert original .tif file to .png
+        img = Image.open(file_path)
+        png_filename = f"{filename[:-4]}.png"
+        png_file_path = os.path.join(app.config["UPLOAD_FOLDER"], png_filename)
+        img.save(png_file_path)
+
+        # Remove the original .tif file
+        os.remove(file_path)
+
+        # Return JSON response with filenames
+        return jsonify(
+            {"uploaded_image": png_filename, "predicted_image": predicted_filename}
         )
 
-        # Resize and preprocess the image for prediction
-        image = uploaded_img.resize((256, 256))
-        image = np.array(image)
-        image = image.astype("float32") / 255.0
-        image = np.expand_dims(image, axis=0)
+    return jsonify({"error": "File format not supported (must be .tif)"})
 
-        # Predict the mask
-        pred_mask = model.predict(image)
-        pred_mask = (pred_mask > 0.5).astype(np.uint8) * 255
 
-        # Save the predicted mask as .png
-        result_filename = "pred_" + filename.replace(".tif", ".png")
-        result_filepath = os.path.join(app.config["RESULT_FOLDER"], result_filename)
-        pred_mask_img = Image.fromarray(pred_mask.squeeze(), mode="L")
-        pred_mask_img.save(result_filepath)
+# Route to serve uploaded images
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
-        response = {
-            "uploaded_image": f"/{UPLOAD_FOLDER}{filename.replace('.tif', '.png')}",
-            "predicted_image": f"/{result_filepath}",
-        }
 
-        return jsonify(response)
-
-    return "Invalid file format. Please upload a TIFF image."
+# Route to serve predicted images
+@app.route("/predicted/<filename>")
+def predicted_file(filename):
+    return send_from_directory(app.config["PREDICTED_FOLDER"], filename)
 
 
 if __name__ == "__main__":
