@@ -34,7 +34,7 @@ def predict():
     if file.filename == "":
         return jsonify({"error": "No selected file"})
 
-    if file and file.filename.endswith((".tif")):
+    if file and file.filename.endswith((".tif", ".tiff")):
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(file_path)
@@ -69,7 +69,7 @@ def predict():
             {"uploaded_image": png_filename, "predicted_image": predicted_filename}
         )
 
-    return jsonify({"error": "File format not supported (must be .tif)"})
+    return jsonify({"error": "File format not supported (must be .tif or .tiff)"})
 
 
 # Route to serve uploaded images
