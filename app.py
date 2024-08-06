@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 
 # Define the API endpoint
-API_URL = "https://brain-mri-function-kbdckfaerq-uc.a.run.app/predict"
+API_URL = "https://us-central1-airy-adapter-431519-f0.cloudfunctions.net/brain_mri_seg_model"
 UPLOAD_FOLDER = "uploads"  # Folder where uploaded files will be stored
 PREDICTED_FOLDER = "predicted"  # Folder where predicted files will be stored
 
