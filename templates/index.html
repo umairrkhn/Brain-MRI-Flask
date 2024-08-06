@@ -6,8 +6,8 @@
     <title>Brain MRI Segmentation</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
             margin: 0;
             padding: 0;
             display: flex;
@@ -15,31 +15,67 @@
             align-items: center;
             flex-direction: column;
             min-height: 100vh;
+            color: #444;
         }
         h1 {
             color: #333;
+            margin-bottom: 20px;
         }
         .container {
             background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
+            max-width: 500px;
+            width: 100%;
         }
         .file-input {
             margin: 20px 0;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
+        }
+        .file-input input {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+        .file-input input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .file-input input[type="submit"]:hover {
+            background-color: #45a049;
         }
         .result {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .result div {
+            margin: 10px;
         }
         .result img {
-            max-width: 300px;
-            margin: 10px;
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        .result h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #555;
         }
     </style>
 </head>
@@ -47,8 +83,12 @@
     <div class="container">
         <h1>Brain MRI Segmentation</h1>
         <form id="uploadForm" action="/predict" method="post" enctype="multipart/form-data">
-            <input class="file-input" type="file" name="file" accept=".tif" required>
-            <input type="submit" value="Upload and Predict">
+            <div class="file-input">
+                <input type="file" name="file" accept=".tif, .tiff" required>
+            </div>
+            <div class="file-input">
+                <input type="submit" value="Upload and Predict">
+            </div>
         </form>
         <div class="result" id="result">
             <!-- Images will be displayed here -->
@@ -84,6 +124,5 @@
             }
         });
     </script>
-    
 </body>
 </html>
